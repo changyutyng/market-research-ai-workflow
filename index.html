@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="用免費版 ChatGPT 就能執行的七階段市場研究流程，附可複製的 prompt。">
+<title>AI 市場研究流程</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Noto+Serif+TC:wght@400;600&display=swap">
+
+<style>
+:root{
+  --bg:#FBFBFD; --ink:#16171D; --soft:#5E5D68; --rule:#E4E3EA; --panel:#F3F3F7;
+  --accent:#3B33EE; --accent-soft:#EEEDFF;
+  --warn:#AE2F2A; --warn-soft:#FBEDEC; --ok:#215A2A; --ok-soft:#EAF3EB;
+  --sans:"Noto Sans TC","Helvetica Neue",Helvetica,sans-serif;
+  --serif:"Noto Serif TC",Georgia,"Songti TC",serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,"Noto Sans TC",monospace;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#121318; --ink:#E7E7EE; --soft:#9B9AA6; --rule:#2A2A34; --panel:#1C1C24;
+  --accent:#9A93FF; --accent-soft:#201E3A;
+  --warn:#F0908B; --warn-soft:#2E1B1A; --ok:#A8D5B0; --ok-soft:#192A1C;
+}}
+:root[data-theme="dark"]{
+  --bg:#121318; --ink:#E7E7EE; --soft:#9B9AA6; --rule:#2A2A34; --panel:#1C1C24;
+  --accent:#9A93FF; --accent-soft:#201E3A;
+  --warn:#F0908B; --warn-soft:#2E1B1A; --ok:#A8D5B0; --ok-soft:#192A1C;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);
+  font-size:16.5px;line-height:1.85;-webkit-font-smoothing:antialiased}
+.wrap{max-width:780px;margin:0 auto;padding-inline:20px;padding-block:0}
+
+header{padding-block:68px 44px;border-bottom:2px solid var(--ink)}
+.kicker{font-family:var(--sans);font-size:11.5px;font-weight:700;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+h1{font-family:var(--sans);font-weight:900;font-size:clamp(34px,7vw,52px);line-height:1.06;
+  letter-spacing:-.03em;margin:0;text-wrap:balance}
+.standfirst{margin:24px 0 0;font-size:18px;line-height:1.8}
+.meta{margin:28px 0 0;padding-top:20px;border-top:1px solid var(--rule);
+  font-family:var(--sans);font-size:13.5px;color:var(--soft);line-height:1.9}
+.meta b{color:var(--ink);font-weight:700}
+
+h2{font-family:var(--sans);font-weight:900;font-size:clamp(23px,4vw,30px);
+  letter-spacing:-.02em;line-height:1.25;margin:0;text-wrap:balance}
+h3{font-family:var(--sans);font-weight:700;font-size:18px;margin:36px 0 10px;letter-spacing:-.01em}
+p{margin:0 0 18px}
+section{padding-block:46px;border-bottom:1px solid var(--rule)}
+section:last-of-type{border-bottom:0}
+
+/* 階段 */
+.phase-head{display:flex;gap:20px;align-items:flex-start;margin-bottom:22px}
+.num{font-family:var(--sans);font-weight:900;font-size:clamp(40px,9vw,64px);line-height:.9;
+  color:var(--accent);flex:0 0 auto;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.phase-head .t{padding-top:4px}
+.phase-head .why{font-family:var(--sans);font-size:13px;font-weight:500;color:var(--soft);
+  margin:8px 0 0;letter-spacing:.02em}
+
+/* prompt 區塊 */
+.prompt{background:var(--panel);border-left:3px solid var(--accent);border-radius:0 3px 3px 0;
+  margin:22px 0;overflow:hidden}
+.prompt .bar{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:9px 16px;border-bottom:1px solid var(--rule)}
+.prompt .lbl{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--soft)}
+.prompt button{font-family:var(--sans);font-size:12px;font-weight:700;padding:5px 12px;
+  border:1px solid var(--rule);background:var(--bg);color:var(--ink);border-radius:3px;cursor:pointer}
+.prompt button:hover{border-color:var(--accent);color:var(--accent)}
+.prompt button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.prompt pre{margin:0;padding:16px;font-family:var(--mono);font-size:13.5px;line-height:1.75;
+  white-space:pre-wrap;word-break:break-word;overflow-x:auto}
+
+.out{font-family:var(--sans);font-size:13.5px;color:var(--soft);
+  border-top:1px dashed var(--rule);padding-top:12px;margin-top:4px}
+.out b{color:var(--ink);font-weight:700}
+
+/* 規則與錯誤案例 */
+ol.rules{list-style:none;counter-reset:r;padding:0;margin:0}
+ol.rules li{counter-increment:r;position:relative;padding:18px 0 18px 52px;
+  border-bottom:1px solid var(--rule)}
+ol.rules li:last-child{border-bottom:0}
+ol.rules li::before{content:counter(r);position:absolute;left:0;top:18px;
+  font-family:var(--sans);font-weight:900;font-size:20px;color:var(--accent);
+  font-variant-numeric:tabular-nums}
+ol.rules b{font-family:var(--sans);font-weight:700;display:block;margin-bottom:4px;font-size:17px}
+
+.trap{background:var(--warn-soft);border-radius:4px;padding:18px 20px;margin:0 0 16px}
+.trap .h{font-family:var(--sans);font-weight:700;font-size:16px;color:var(--warn);margin:0 0 6px}
+.trap p{margin:0;font-size:15.5px}
+.trap p + p{margin-top:10px}
+
+.note{background:var(--accent-soft);border-radius:4px;padding:18px 20px;margin:22px 0;
+  font-size:15.5px}
+.note .h{font-family:var(--sans);font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+.note p{margin:0}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:2px;
+  background:var(--rule);border:1px solid var(--rule);margin:24px 0}
+.stat{background:var(--bg);padding:16px 14px}
+.stat .n{font-family:var(--sans);font-weight:900;font-size:26px;line-height:1.1;
+  letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat .k{font-family:var(--sans);font-size:11.5px;color:var(--soft);margin-top:5px;letter-spacing:.04em}
+
+.tbl{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:14px;line-height:1.6}
+.tbl th{text-align:left;font-weight:700;font-size:12px;letter-spacing:.06em;color:var(--soft);
+  padding:8px 10px;border-bottom:2px solid var(--ink)}
+.tbl td{padding:10px;border-bottom:1px solid var(--rule);vertical-align:top}
+.tbl td:first-child{white-space:nowrap;font-weight:700}
+.tbl td:nth-child(2){white-space:nowrap}
+.tbl b{color:var(--warn)}
+@media (max-width:520px){.tbl{font-size:13px}.tbl td,.tbl th{padding:8px 6px}}
+
+footer{padding-block:40px 64px;color:var(--soft);font-size:14.5px;font-family:var(--sans);line-height:1.9}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="kicker">七階段 AI 協作流程</p>
+  <h1>用 AI 做市場研究報告</h1>
+  <p class="standfirst">這不是一個 prompt，是七個階段。中間有四次人工介入，少掉任何一次，產出的東西都會看起來很完整，但不能用來做決定。</p>
+  <p class="meta">
+    這份流程整理自一次真實的專案：為一個首屆舉辦的小型藝術博覽會做同類市場研究，目的是回答團隊內部兩個具體的質疑。<br>
+    <b>產出</b>　一份 48 頁的結論文件、一張 14 個對象 × 30 欄位的對照表、98 筆逐條記錄的來源、5 張圖。<br>
+    <b>耗時</b>　約三個工作天，含兩輪補查與一次全面改寫。
+  </p>
+</header>
+
+<section>
+  <h2>為什麼一個 prompt 做不出這種報告</h2>
+  <p>把「幫我研究 ◯◯ 市場」交給 AI，你會拿到一份讀起來很完整的東西：有分類、有條列、有結論。問題是它<strong>沒有辦法被查證，也沒有辦法被推翻</strong>。</p>
+  <p>具體會缺三樣東西。第一，它不知道你要用這份研究做什麼決定，所以它會平均用力，重要的和不重要的寫得一樣長。第二，它給的數字和網址有相當比例是捏造的，而且捏造得很像真的。第三，它不會告訴你哪些是查到的、哪些是它推論出來的，全部用同一種確定的語氣寫完。</p>
+  <p>下面七個階段，每一個都在解決其中一個問題。</p>
+</section>
+
+<section>
+  <h2>開始之前：用免費版 ChatGPT 怎麼執行</h2>
+  <p>免費版就能執行完整套流程，不需要建 GPT，也不需要付費。只有一個原則：<strong>一個階段開一次新對話。</strong>七個階段擠在同一串對話裡，聊得太長，它會忘記前面給的規則。</p>
+
+  <h3>每個階段的固定動作</h3>
+  <ol class="rules">
+    <li><b>開一個新對話</b>不要接在上一個階段的對話後面。</li>
+    <li><b>確認「搜尋」有打開</b>輸入框下方的「搜尋／Search」要點亮。沒開的話，它會用訓練資料裡的舊資訊回答，而且不會告訴你。</li>
+    <li><b>先貼「全程規則」，再貼這個階段的 prompt</b>全程規則在下方，按「複製」就好。每個階段都要重貼一次。</li>
+    <li><b>把上一階段的結果貼在最後面</b>直接貼文字就好，不用上傳檔案（免費版的上傳次數有限）。</li>
+    <li><b>做完把結果存起來</b>複製到 Google 文件或記事本，一個階段存一份，下一個階段要用。</li>
+  </ol>
+
+  <div class="prompt">
+    <div class="bar"><span class="lbl">全程規則（每個階段先貼這段）</span><button type="button" data-copy>複製</button></div>
+    <pre>你在協助我做一份市場研究。這份研究要能被查證，也要能被推翻。
+以下規則在這次對話的每一次回答都適用：
+
+【來源】
+1. 收費、規章、票價、日期這類數字，只採用官方簡章、官網或官方新聞稿。二手文章不算數
+2. 業者自述的成果（人次、成交率、市占），一律標註「業者自述」，並註明未經第三方查核
+3. 每一條事實都要附網址與取得日期
+4. 查不到就寫「查無」，並列出你查過哪些地方。不要用推測把空格填滿
+5. 我會點開你給的每一個網址驗證。給不出可驗證網址的內容，一律寫查無
+
+【判定】
+對假設下結論只能三選一：已驗證／資料不足／推翻
+「大概可以」「應該沒問題」一律歸到資料不足
+
+【寫法】
+先講結論再講依據；推論要標「推論」；不用「總體而言」這類沒有資訊的句子；避免行話
+
+【不要做】
+不要為了段落完整補沒查證的內容；不要把統計基準不同的數字放在一起比；
+不要把「我查不到」寫成「不存在」</pre>
+  </div>
+
+  <div class="note">
+    <p class="h">如果你的 ChatGPT 左側有「專案／Projects」</p>
+    <p>可以開一個專案，把全程規則貼進專案的指示欄，之後在專案裡開新對話就不用每次重貼。沒有這個功能的話，每次照上面的方式貼上規則即可。</p>
+  </div>
+
+  <h3>哪幾關要停下來自己檢查</h3>
+  <table class="tbl">
+    <thead><tr><th>階段</th><th>是否停下檢查</th><th>檢查什麼</th></tr></thead>
+    <tbody>
+      <tr><td>01 假設化</td><td><b>必須停下</b></td><td>團隊真正想要知道什麼事實？只有你能判斷。如果想不出什麼證據能推翻某條假設，就刪掉這條假設</td></tr>
+      <tr><td>02 對象</td><td>快速確認</td><td>分類判準是否合理，每個對象的歸類有沒有爭議</td></tr>
+      <tr><td>03 欄位</td><td><b>必須停下</b></td><td>每條假設都有欄位在檢驗它，每個欄位都對得上某條假設</td></tr>
+      <tr><td>04 查證</td><td><b>必須停下</b></td><td>親自點開網址驗證（做法見第 04 階段）</td></tr>
+      <tr><td>05 進表</td><td>快速確認</td><td>數字在整理過程中有沒有出錯</td></tr>
+      <tr><td>06 寫文件</td><td>快速確認</td><td>每個數字能不能在資料表中找到出處</td></tr>
+      <tr><td>07 審查</td><td><b>必須停下</b></td><td>只有實際閱讀報告的人，才能判斷哪裡看不懂</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:18px"><strong>不要把整頁貼進去說「照這個做」。</strong>它會一口氣把七個階段都「做完」，給你一份完整漂亮、但沒有一處被驗證過的報告。</p>
+</section>
+
+<section>
+  <div class="phase-head">
+    <div class="num">01</div>
+    <div class="t"><h2>先把質疑變成假設</h2>
+      <p class="why">不要從「幫我研究市場」開始，要從「我們相信什麼、憑什麼」開始</p></div>
+  </div>
+  <p>這是整套流程裡最重要的一步，也是最常被跳過的一步。研究要有用，前提是它能回答一個具體的問題；而具體的問題通常藏在團隊內部的爭論裡。</p>
+  <p>在我們那個專案裡，起點是兩句話：「我們跟市集到底差在哪？」「中間這個角色有沒有必要存在？」這兩句被轉成十三條可檢驗的假設，整份研究後來都圍繞這十三條假設進行。</p>
+  <div class="prompt">
+    <div class="bar"><span class="lbl">Prompt 1</span><button type="button" data-copy>複製</button></div>
+    <pre>我要做一份市場研究，但先不要開始查資料。
+
+第一步只做一件事：把下面這段描述裡，所有「我們相信但還沒驗證」的事情，
+逐條列成可檢驗的假設。
+
+要求：
+1. 每條假設要能被「有先例／沒先例」判定，不要寫成價值判斷
+2. 每條後面寫明：要驗證它，需要看到什麼樣的證據才算數
+3. 如果某個信念根本無法用桌面研究驗證，直接說明，不要勉強列進去
+
+［貼上你的商業模式描述、團隊內部的爭論、你自己最不確定的地方］</pre>
+    <p class="out"><b>產出</b>　一份編號的假設清單。這份清單接下來會變成研究的骨架，也會變成最後報告裡的一章。</p>
+  </div>
+</section>
+
+<section>
+  <div class="phase-head">
+    <div class="num">02</div>
+    <div class="t"><h2>定義對象，而且判準只能有一個</h2>
+      <p class="why">「相似的公司」是模糊詞，會讓研究失焦</p></div>
+  </div>
+  <p>多數人會列出一串「競爭對手」，但沒講清楚憑什麼算是競爭對手。判準不明確，後面所有比較都會各說各話。</p>
+  <p>我們用的判準是「產品是否相同」，於是分成三類：賣同樣東西的是直接競爭、賣替代品的是間接競爭、做得最接近理想的是目標參照。這個判準很窄，但正因為窄，每個對象屬於哪一類都沒有爭議。</p>
+  <div class="prompt">
+    <div class="bar"><span class="lbl">Prompt 2</span><button type="button" data-copy>複製</button></div>
+    <pre>依據上面的假設清單，列出需要研究的對象。
+
+分類判準必須先講明白，而且只能用一個判準。
+不要用「相似度」「相關性」這種可以各自解讀的詞。
+
+每個對象要標明：
+・它屬於哪一類，為什麼
+・它能幫我們驗證哪幾條假設
+・它的資料公開程度如何（簡章會上網嗎、有沒有媒體報導）
+
+如果有對象你認為該納入但我沒提到，列出來並說明理由。
+資料完全不公開的對象，建議排除並說明原因。</pre>
+    <p class="out"><b>產出</b>　對象清單＋分類判準一句話。判準這句話後來會原封不動寫進報告的研究範圍章節。</p>
+  </div>
+</section>
+
+<section>
+  <div class="phase-head">
+    <div class="num">03</div>
+    <div class="t"><h2>先定欄位，再查資料</h2>
+      <p class="why">欄位就是研究設計。先查再整理，會得到一堆無法橫向比較的段落</p></div>
+  </div>
+  <p>這一步決定了研究的品質上限。欄位定好，每個對象都填同樣的格子，比較才成立；欄位沒定，AI 會針對每個對象寫一段散文，讀起來豐富，但你沒辦法回答「那這七家的收費方式到底有什麼共同點」。</p>
+  <p>我們那次定了三十個欄位，分成八組：基本資料、對創作者的收費、對觀眾的收費、規模、選件方式、價格、現場做法、存續狀態。</p>
+  <div class="prompt">
+    <div class="bar"><span class="lbl">Prompt 3</span><button type="button" data-copy>複製</button></div>
+    <pre>在開始查資料之前，先設計這份研究的欄位。
+
+規則：
+1. 每一欄都要能讓所有對象橫向比較
+2. 每一欄都要對應到至少一條假設。不對應任何假設的欄位不要放
+3. 欄位要問「事實」不要問「評價」
+   （問「攤位費多少」，不要問「費用是否合理」）
+4. 每一欄都要事先想好：如果查不到，要怎麼標示
+
+列出一張表：欄位名稱｜這欄要回答什麼｜對應假設｜資料可能在哪裡｜查無時怎麼寫</pre>
+    <p class="out"><b>產出</b>　欄位表。這張表同時是查證的工作單，也是最後對照表的列標題。</p>
+  </div>
+</section>
+
+<section>
+  <div class="phase-head">
+    <div class="num">04</div>
+    <div class="t"><h2>平行查證，而且來源規則要事先明確規定</h2>
+      <p class="why">這一步最容易產生看起來正確、實際上是捏造的內容</p></div>
+  </div>
+  <p>如果你使用的工具能同時執行多個子任務，就把對象分組平行查證。不支援的話就分批進行，但每批都要重貼一次來源規則 —— 不重貼的話，進行到後面它會開始放寬標準。</p>
+  <p>規則裡最關鍵的是最後一條。明確告訴它「你給的每個網址我都會點開」，產出內容中可驗證的比例會明顯提高。</p>
+  <div class="prompt">
+    <div class="bar"><span class="lbl">Prompt 4</span><button type="button" data-copy>複製</button></div>
+    <pre>以下是研究對象清單與欄位表。請依欄位表逐欄查證。
+
+來源規則，每一條都要遵守：
+1. 收費、規章、票價、日期這類數字，只採用官方簡章、官網或官方新聞稿。
+   二手整理的文章不算數
+2. 主辦方自己宣稱的成果（參觀人次、成交率、滿意度）一律標註「主辦自述」，
+   並註明未經第三方查核
+3. 每一條事實都要附上網址與取得日期
+4. 查不到就寫「查無」，並且列出你查過哪些地方。
+   不要用推測、不要用「一般而言」把空格填滿
+5. 你給的每一個網址我都會點開驗證。
+   給不出可驗證網址的內容，一律寫查無
+
+產出：每個對象一節，依欄位表逐欄填寫，查無的欄位保留並標示。</pre>
+    <p class="out"><b>產出</b>　每個對象一份原始查證筆記。這些筆記不是報告，是素材，之後不會直接給任何人看。</p>
+  </div>
+  <div class="trap">
+    <p class="h">這一步實際發生過的錯誤</p>
+    <p>我們另外請了一個 AI 做交叉查證，它回報的八個引用網址裡，有五個是錯的 —— 有的指向不相干的文章，有的連到完全無關的公司，有的是 404。文字結論本身大致合理，但出處是捏造的。</p>
+    <p>原因是它用的搜尋工具只回傳摘要、不回傳網址，而它被要求附來源時，就自己生成了看起來合理的網址。<strong>AI 給的網址預設當成假的，每一條都要親自點開驗證。</strong></p>
+  </div>
+  <div class="note">
+    <p class="h">免費版：一次只查證 2 到 3 個對象</p>
+    <p>把 prompt 裡的「研究對象清單」換成這一批的 2 到 3 個就好。免費版每隔幾小時有訊息上限，一批太大，做到一半被切斷，整批就得重做。</p>
+  </div>
+  <h3>每一批做完後怎麼驗證網址</h3>
+  <p>隨機點開五到十個它給的網址。打不開，或打開後是首頁而不是那篇文章，就算錯誤；打得開但內容沒有提到它所說的事，也算錯誤。</p>
+  <p>錯誤超過兩成，就開新對話整批重新查證，並把下面這段加在 prompt 最前面：</p>
+  <div class="prompt">
+    <div class="bar"><span class="lbl">重查時加在最前面</span><button type="button" data-copy>複製</button></div>
+    <pre>上一批有 N 個網址無法驗證。這批請降低產出量、提高可驗證性。
+沒有實際開啟過的網址不要給，做不到就寫查無。</pre>
+  </div>
+</section>
+
+<section>
+  <div class="phase-head">
+    <div class="num">05</div>
+    <div class="t"><h2>事實進試算表，不要直接寫文件</h2>
+      <p class="why">把「事實層」和「論述層」分開，之後改一個數字只要改一個地方</p></div>
+  </div>
+  <p>這是整套流程裡最反直覺、但回報最高的一步。多數人查完就直接請 AI 寫報告，結果是同一個數字散落在文件的六個地方，改一次要找六次，漏掉一次整份報告就有矛盾。</p>
+  <p>我們做了三個分頁：對照表（對象 × 欄位）、假設判定（每條假設的證據與結論）、來源（每一筆資料的出處與用在哪裡）。報告裡的每個數字，都回得到來源分頁的某一列。</p>
+  <div class="prompt">
+    <div class="bar"><span class="lbl">Prompt 5</span><button type="button" data-copy>複製</button></div>
+    <pre>把查證結果整理成三個分頁的資料表，用 CSV 格式產出，一個分頁一段。
+
+分頁一　對照表：對象為欄、欄位為列，每格填查證結果，查無就寫查無
+
+分頁二　假設判定：每條假設一列，欄位為
+　　證據摘要｜判定｜意涵｜出處
+　　判定只能三選一：已驗證（有先例且結果支持）／
+　　資料不足（無直接先例，或證據相關但無因果）／推翻（先例結果與假設相反）
+　　「大概可以」「應該沒問題」一律歸到資料不足
+
+分頁三　來源：對象｜來源名稱｜網址｜取得日期｜這筆資料用在哪一欄或哪一章</pre>
+    <p class="out"><b>產出</b>　一份可以單獨交付的資料表。就算報告沒寫完，這張表本身已經有價值。</p>
+  </div>
+  <h3>CSV 怎麼變成表格</h3>
+  <p>開一個新的 Google 試算表，點 A1，把 ChatGPT 給的第一段 CSV 貼上，旁邊會跳出「將文字分割成欄」的按鈕，點它就會分好欄。另外兩個分頁也照同樣步驟操作。</p>
+  <p>到第 06 階段寫報告時，把這三段 CSV 貼進新對話，當作寫作的依據。</p>
+  <div class="note">
+    <p class="h">為什麼判定要分三級</p>
+    <p>只分「成立／不成立」會逼人把「還不知道」講成「大概成立」。分出「資料不足」這一級，等於允許研究誠實地說不知道 —— 而「不知道」本身就是重要的決策資訊：它告訴你哪些事必須靠實測，不能靠研究。我們最後十三條假設裡有八條是資料不足，那八條後來變成了首屆活動必須現場量測的指標。</p>
+  </div>
+</section>
+
+<section>
+  <div class="phase-head">
+    <div class="num">06</div>
+    <div class="t"><h2>依據資料表撰寫文件</h2>
+      <p class="why">寫作規則要在動筆前就給，事後改比重寫還久</p></div>
+  </div>
+  <p>到這一步才開始寫報告，而且寫作的依據是資料表，不是原始筆記。這樣可以避免 AI 在寫作時「順手」補進沒有查證的內容。</p>
+  <div class="prompt">
+    <div class="bar"><span class="lbl">Prompt 6</span><button type="button" data-copy>複製</button></div>
+    <pre>依據資料表寫成報告。以下規則在整份文件都適用：
+
+內容
+・所有數字必須回得到來源分頁的某一列。表上沒有的數字不要出現
+・屬於推論而非資料直接支持的，句首標「推論」
+・每一章結尾要有一段「對我們的意涵」，
+　寫明這章的發現會改變哪個決定，不要只摘要前面講過的話
+・查無的事情要寫出來，並說明查過哪些地方
+
+寫法
+・先講結論，再講依據
+・不要用「總體而言」「值得注意的是」「綜上所述」這類沒有資訊的句子
+・專有名詞第一次出現要解釋
+・避免行話。如果一個詞需要圈內知識才看得懂，換掉
+
+結構
+每章固定三段：這個對象是什麼 → 跟我們哪裡相同哪裡不同 → 對我們的意涵</pre>
+    <p class="out"><b>產出</b>　報告初稿。這份初稿還不能用，它需要第七階段。</p>
+  </div>
+</section>
+
+<section>
+  <div class="phase-head">
+    <div class="num">07</div>
+    <div class="t"><h2>逐段審查，看不懂就提問</h2>
+      <p class="why">這一步沒有 prompt，因為做事的人是你</p></div>
+  </div>
+  <p>不要一次讀完才給整體意見。逐段閱讀，遇到任何一句話看不懂，就把那句貼回對話中提問：<strong>「這句是什麼意思？」</strong></p>
+  <p>這句話的威力比任何 prompt 技巧都大。AI 寫出你看不懂的句子，九成不是因為你不懂，是因為它沒想清楚，用一個抽象的詞把空缺蓋過去了。</p>
+  <p>我們那次被指出的詞包括：「收縮」（誰在收縮、收縮什麼）、「行情」（指市場普遍條件，但三個抽象詞連用就讀不懂了）、「兩者」（前一段提了三組東西，不知道指哪兩個）。每一個被問出來的地方，改寫後都變成了更具體、也更有用的內容。</p>
+  <div class="note">
+    <p class="h">另一種有效的提問</p>
+    <p>「這個結論的證據是什麼？」「這是查到的，還是你推論的？」「這個數字是哪一年的？」這三句話在審查時交替使用，可以逼出大部分藏起來的不確定性。</p>
+  </div>
+
+  <h3>二輪補查：當結論是「查不到」的時候</h3>
+  <p>第一輪我們查不到任何一般買家討論這個價格帶的藝術品，初稿寫的是「公開討論中為語彙真空」。但「我查不到」跟「它不存在」是兩件事 —— 很可能只是管道不對。</p>
+  <p>換一批管道再查一次之後，找到了三十二條逐字發言，結論從「查無」變成了正面證據，而且那一章從全份報告最弱的一節變成了最強的一節。</p>
+  <div class="prompt">
+    <div class="bar"><span class="lbl">Prompt 7</span><button type="button" data-copy>複製</button></div>
+    <pre>以下這個結論目前的證據是「查不到」。
+「查不到」不等於「不存在」，可能只是管道不對。
+
+請換一批管道再查一次。搜尋引擎查不到的東西，
+通常在這些地方：論壇的分板與站內搜尋、部落格平台的標籤頁、
+社群平台的站內搜尋、產業公會或主管機關的公開文件。
+
+每找到一條：
+・附上原文逐字，不要改寫、不要摘要
+・附上網址
+・說明你用什麼方式確認這段話確實出現在那個頁面上
+・標明發言者的身分，以及你怎麼確認的
+
+找不到也要回報你查了哪些管道、各自的結果數。</pre>
+    <p class="out"><b>產出</b>　補強後的證據，以及一份「查過哪裡」的紀錄。後者要寫進報告的研究方法章節。</p>
+  </div>
+  <div class="trap">
+    <p class="h">引文一定要驗證發言者身分</p>
+    <p>我們第一版引用了一批「創作者對市集的抱怨」，看起來很有說服力。使用者讀的時候發現不對：那些發言來自小吃攤商、夜市攤販、賣飾品的賣家，沒有一個是藝術創作者。</p>
+    <p>整節重查之後，改成十九條來自十位具名藝術創作者的逐字發言，每一條都實際打開頁面確認過。<strong>引文的說服力完全建立在發言者身分上，身分沒驗證，引文就是裝飾。</strong></p>
+  </div>
+</section>
+
+<section>
+  <h2>五條不能違反的規則</h2>
+  <ol class="rules">
+    <li><b>先有假設，再有研究</b>沒有假設的研究會變成資料堆積。你會知道很多事，但做不了任何決定。</li>
+    <li><b>先定欄位，再查資料</b>欄位就是研究設計。先查再整理，得到的是一堆無法橫向比較的散文。</li>
+    <li><b>事實放表，論述放文件</b>同一個數字只存在一個地方。改一次就全對，而不是改六次還漏掉一次。</li>
+    <li><b>判定分三級，不要只分對錯</b>允許研究說「不知道」。不知道的那些，就是之後必須實測的清單。</li>
+    <li><b>AI 給的網址預設是假的</b>每一條都要親自點開驗證。這一條沒有例外，也沒有捷徑。</li>
+  </ol>
+</section>
+
+<section>
+  <h2>其他實際發生過的錯誤</h2>
+  <div class="trap">
+    <p class="h">數字誤讀</p>
+    <p>報告寫了某個博覽會的參展藝術家「從 468 位降到 46 位」，讀起來很驚人。使用者覺得跌幅太誇張，要求再查一次 —— 結果 46 位只是某一個展區的數字，不是全場。正確的序列是 468 → 339 → 數十位，趨勢是真的，但原本的對比是錯的。</p>
+    <p>AI 很容易把兩個來源的數字放在一起比較，而不檢查它們的統計基準是不是一樣。<strong>凡是「從 A 降到 B」的句子，都要分別確認 A 和 B 的定義。</strong></p>
+  </div>
+  <div class="trap">
+    <p class="h">整段替換時的內容遺失</p>
+    <p>改寫時如果用「找到這段、換成那段」的方式操作，而比對的關鍵字只對到段落前半，後半段會被整段覆蓋掉。我們因此遺失過兩段證據，是事後比對才發現的。</p>
+    <p>每次大幅改寫後，用改寫前的版本做一次逐行比對，確認只有預期中的地方變了。</p>
+  </div>
+  <div class="trap">
+    <p class="h">把「我查不到」寫成「它不存在」</p>
+    <p>這是最隱蔽的一種錯誤，因為它讀起來像個發現。報告裡只要出現「查無」「不存在」「沒有先例」，都要追問一句：查過哪些地方？沒查過的地方有哪些？</p>
+  </div>
+</section>
+
+<section>
+  <h2>這套流程做出來的東西長什麼樣</h2>
+  <div class="stats">
+    <div class="stat"><div class="n">14</div><div class="k">研究對象</div></div>
+    <div class="stat"><div class="n">30</div><div class="k">比較欄位</div></div>
+    <div class="stat"><div class="n">13</div><div class="k">可檢驗假設</div></div>
+    <div class="stat"><div class="n">98</div><div class="k">逐條來源</div></div>
+    <div class="stat"><div class="n">51</div><div class="k">逐字引文</div></div>
+    <div class="stat"><div class="n">48</div><div class="k">頁</div></div>
+  </div>
+  <p>十三條假設最後的判定是：四條已驗證、八條資料不足、一條被推翻。被推翻的那一條，是整份研究最有價值的產出 —— 它讓團隊在花錢之前就知道原本的收入假設行不通，必須補上別的來源。</p>
+  <p>如果這份研究只是「看起來很完整」，那一條不會被推翻。它會被寫成「尚待觀察」，然後大家繼續相信原本的假設。</p>
+</section>
+
+<footer>
+  這份流程整理自 2026 年 10 月的一次實作，適用於需要可查證、可被推翻的桌面研究。<br>
+  不適用於只需要快速概覽的情境 —— 那種情況下，一個 prompt 就夠了。
+</footer>
+
+</div>
+
+<script>
+document.querySelectorAll('[data-copy]').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var pre = btn.closest('.prompt').querySelector('pre');
+    var done = function(){ var o = btn.textContent; btn.textContent = '已複製';
+      setTimeout(function(){ btn.textContent = o; }, 1400); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(pre.textContent).then(done, fallback);
+    } else { fallback(); }
+    function fallback(){
+      var r = document.createRange(); r.selectNodeContents(pre);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      try { document.execCommand('copy'); done(); } catch(e) { btn.textContent = '請手動選取'; }
+    }
+  });
+});
+</script>
+</body>
+</html>
